@@ -11,14 +11,14 @@ Dioptimalkan dan diuji untuk:
 - **Laptop**: Lenovo IdeaPad Slim 3 14IU7
 - **CPU**: Intel Core i3-1215U (CPU only, tanpa GPU dedicated)
 - **RAM**: 16 GB (efektif ~12–13 GB karena shared dengan iGPU)
-- **OS**: T4n OS (berbasis Void Linux, init system **runit**)
+- **OS** : T4n OS (berbasis Void Linux, init system **runit**)
 
 ## Model yang Diinstal
 
-| Model | Ukuran | Kegunaan |
-|---|---|---|
-| `qwen2.5-coder:7b` | ~4.7 GB | Coding assistant — autocomplete, review, debugging |
-| `xploiter/pentester` | ~1.6 GB | Security / pentest / CTF assistant |
+| Model             | Ukuran | Kegunaan                                           |
+|-------------------|--------|----------------------------------------------------|
+| `qwen2.5-code:7b` | 4.7 GB | Coding Assistant - Autocomplete, Review, Debugging |
+| `deepseek-r1:8b`  | 5.2 GB | Ethical Hacking - Security, Pentest, Reasoning     |
 
 > Kedua model dipilih agar tetap nyaman dijalankan di CPU i3-1215U
 > tanpa GPU. Hindari model 14B ke atas pada spek ini — terlalu lambat
@@ -32,7 +32,7 @@ Semua diarahkan ke partisi root, **tidak menyentuh `/home`**:
 /opt/ollama/bin/        # binary ollama
 /opt/ollama/lib/        # library pendukung
 /opt/ollama/models/     # model yang di-pull (OLLAMA_MODELS)
-/etc/sv/ollama/          # definisi service runit
+/etc/sv/ollama/         # definisi service runit
 ```
 
 Service di-link ke direktori yang benar-benar di-scan oleh `runsvdir`
@@ -42,15 +42,7 @@ di Void Linux:
 /etc/runit/runsvdir/default/ollama -> /etc/sv/ollama
 ```
 
-> Catatan: `/var/service` **bukan** path aktif yang dipakai `runsvdir`
-> pada sistem ini — path tersebut sempat dicoba di awal pengembangan
-> script namun ternyata tidak ter-scan. `uninstall-ollama.sh` tetap
-> membersihkan path ini sebagai jaga-jaga dari sisa percobaan lama.
-
----
-
 ## Instalasi
-
 ### Prasyarat
 
 - Akses `sudo`/root
@@ -66,9 +58,6 @@ di Void Linux:
 chmod +x install-ollama.sh
 sudo ./install-ollama.sh
 ```
-
-Script ini idempotent — aman dijalankan ulang. Tahap yang sudah pernah
-berhasil (env sudah ada, service sudah ter-link) otomatis di-skip.
 
 ### Apa yang Dilakukan Script
 
@@ -87,12 +76,10 @@ berhasil (env sudah ada, service sudah ter-link) otomatis di-skip.
 ### Setelah Instalasi
 
 ```bash
-source ~/.bashrc        # atau buka terminal baru
+source ~/.bashrc , ~/.zshrc atau ~/.config/fish/config.fish  # atau buka terminal baru
 ollama run qwen2.5-coder:7b
-ollama run xploiter/pentester
+ollama run deepseek-r1:8b
 ```
-
----
 
 ## Uninstall
 
@@ -114,8 +101,6 @@ sudo ./uninstall-ollama.sh --keep-models
 - Blok environment variable di `.bashrc` / `.zshrc` / `config.fish`
 - SSH key (`id_ed25519`) yang otomatis dibuat Ollama di `/root/.ollama`
 
----
-
 ## Mengelola Service Manual
 
 ```bash
@@ -130,8 +115,6 @@ Untuk debug langsung tanpa lewat runit:
 ```bash
 sudo sh /etc/sv/ollama/run
 ```
-
----
 
 ## Troubleshooting
 
@@ -162,15 +145,11 @@ seluruh service runit di sistem, termasuk dependency PipeWire. Versi
 script saat ini **tidak lagi** menggunakan signal tersebut — diganti
 dengan polling pasif terhadap `supervise/ok`.
 
----
+## > [!NOTE]
+> Jangan jalankan dua model besar bersamaan di spek CPU-only 16 GB — muat satu per satu sesuai kebutuhan.
 
-## Catatan Tambahan
+<div align="center">
 
-- `xploiter/pentester` adalah model komunitas berukuran kecil (1.6 GB).
-  Dalam pengujian, model ini bekerja jauh lebih koheren dalam Bahasa
-  Inggris dibanding Bahasa Indonesia, dan sempat memberi respons yang
-  meragukan soal identitasnya sendiri. Pertimbangkan `deepseek-r1:8b`
-  sebagai alternatif yang lebih reliable untuk reasoning/security jika
-  hasil `xploiter/pentester` terasa kurang memuaskan.
-- Jangan jalankan dua model besar bersamaan di spek CPU-only 16 GB —
-  muat satu per satu sesuai kebutuhan.
+[@T4n-Labs](https://t4n-labs.github.io/site) · [@Gh0sT4n](https://gh0st4n.github.io/site)
+
+</div>
