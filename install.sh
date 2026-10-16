@@ -32,7 +32,7 @@ curl -L "$URL" -o "$OUTPUT"
 
 info "Extraction to $PATH_OLLAMA"
 if tar --help 2>&1 |grep -q -- '--zstd'; then
-  tar --zstd -C "PATH_OLLAMA" -xf "$OUTPUT"
+  tar --zstd -C "$PATH_OLLAMA" -xf "$OUTPUT"
 elif command -v zstd > /dev/null 2>&1; then
   zstd -d -c "$OUTPUT" | tar -C "$PATH_OLLAMA" -xf -
 else
@@ -54,7 +54,7 @@ set -gx OLLAMA_MODELS /opt/ollama/models
 '
 
 REAL_USER="${SUDO_USER:-$USER}"
-REAL_HOME=$(gatent passwd "$REAL_USER" | cut -d: -f6)
+REAL_HOME=$(getent passwd "$REAL_USER" | cut -d: -f6)
 
 append_once() {
   file="$1"; marker="$2"; block="$3"
@@ -68,9 +68,9 @@ append_once() {
 }
 
 if [ -n "$REAL_HOME" ]; then
-  [ -f "$REAL_HOME./bashrc" ] && append_once "$REAL_HOME/.bashrc" "ollama-env" "$ENV_BLOCK_BASH"
-  [ -f "$REAL_HOME./zshrc" ] && append_once "$REAL_HOME/.zshrc" "ollama-env" "$ENV_BLOCK_BASH"
-  if [ -d "$REAL_HOME./config/fish" ]; then
+  [ -f "$REAL_HOME/.bashrc" ] && append_once "$REAL_HOME/.bashrc" "ollama-env" "$ENV_BLOCK_BASH"
+  [ -f "$REAL_HOME/.zshrc" ] && append_once "$REAL_HOME/.zshrc" "ollama-env" "$ENV_BLOCK_BASH"
+  if [ -d "$REAL_HOME/.config/fish" ]; then
     mkdir -p "$REAL_HOME/.config/fish"
     append_once "$REAL_HOME/.config/fish/config.fish" "ollama-env" "$ENV_BLOCK_FISH"
   fi
@@ -101,7 +101,7 @@ fi
 info "Waiting for runsvdir to pick up the new service (polling, no global signal)"
 
 tries=0
-while [ ! -e "$RN/ollama/supervice/ok" ]; do
+while [ ! -e "$RN/ollama/supervise/ok" ]; do
   tries=$((tries + 1))
   if [ "$tries" -ge 15 ]; then
     info "runsvdir still hasn't picked up the service after 15s, trying anyway"
@@ -117,7 +117,7 @@ info "Waiting for Ollama service to come up..."
 tries=0
 until curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:11434 2>/dev/null | grep -q '^200$'; do
   if [ "$tries" -ge 30 ]; then
-    err "Ollama serice did not become ready in time. Check 'sudo sv status ollama' and 'sudo sh /etc/sv/ollama/run' manually."
+    err "Ollama service did not become ready in time. Check 'sudo sv status ollama' and 'sudo sh /etc/sv/ollama/run' manually."
   fi
   sleep 1
 done
@@ -128,14 +128,14 @@ sleep 5
 
 info "Pulling Models: $MODELS"
 for model in $MODELS; do
-  info "Pulling $model (this can take a while depending on model size and connectionn)"
+  info "Pulling $model (this can take a while depending on model size and connection)"
   pull_tries=0
   until /opt/ollama/bin/ollama pull "$model"; do
     pull_tries=$((pull_tries + 1))
     if [ "$pull_tries" -ge 3 ]; then
-      err "Failes to pull $model after 3 attemps. Checks your internet connection and run manually: 'ollama pull $model'"
+      err "Failed to pull $model after 3 attempts. Check your internet connection and run manually: 'ollama pull $model'"
     fi
-    info "Pull failes, retrying in 10s ($pull_tries/3)..."
+    info "Pull failed, retrying in 10s ($pull_tries/3)..."
     sleep 10
   done
 done
