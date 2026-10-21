@@ -18,7 +18,7 @@ OUTPUT="/tmp/ollama-linux-amd64.tar.zst"
 SV="/etc/sv/ollama"
 RN="/etc/runit/runsvdir/default"
 
-MODELS="qwen2.5-coder:7b deepseek-r1:8b"
+MODELS="qwen2.5-coder:7b qwen2.5-coder:3b qwen3:8b qwen3:4b"
 
 root
 
@@ -167,4 +167,4 @@ info "Service    : sudo sv status ollama"
 info "Restart your shell (or run: source $check) to pick up the new PATH"
 info "Usage:"
 info "  ollama run qwen2.5-coder:7b # Coding/Assistant"
-info "  ollama run deepseek-r1:8b   # Security/CTF"
+info "  ollama run qwen3:8b         # Security/CTF"
